@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>שם קוד — לוח משחק</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#0e141b; --bg2:#131c26; --panel:#1a2531; --panel2:#22303f;
+    --ink:#e9eef3; --muted:#8a99a8; --line:rgba(255,255,255,.08);
+    --card:#e7e9ec; --card-ink:#16202b;
+    --red:#d43b3b; --red-d:#9f2a2a;
+    --blue:#2f80d6; --blue-d:#225f9f;
+    --neutral:#c2a878; --neutral-ink:#2a2113;
+    --assassin:#0b0b10; --assassin-ink:#cfd4da;
+    --gold:#e3a92b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden}
+  body{
+    background:radial-gradient(1200px 700px at 70% -10%, #18222e 0%, var(--bg) 55%);
+    color:var(--ink); font-family:"Heebo",system-ui,sans-serif;
+    min-height:100%; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:10px 16px 12px;height:100dvh;display:flex;flex-direction:column}
+
+  /* ---------- header ---------- */
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+  .brand{display:flex;align-items:center;gap:14px}
+  .stamp{
+    font-family:"Rubik";font-weight:900;letter-spacing:.5px;
+    border:2px solid var(--gold);color:var(--gold);
+    padding:4px 10px;border-radius:6px;transform:rotate(-4deg);
+    font-size:13px;white-space:nowrap;
+  }
+  h1{font-family:"Rubik";font-weight:900;font-size:34px;margin:0;line-height:1}
+  h1 small{display:block;font-family:"Heebo";font-weight:500;font-size:12px;letter-spacing:3px;color:var(--muted);margin-top:6px}
+
+  .controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  button{
+    font-family:"Heebo";font-weight:700;font-size:15px;cursor:pointer;
+    border:1px solid var(--line);background:var(--panel);color:var(--ink);
+    padding:11px 16px;border-radius:11px;transition:transform .06s ease, background .15s ease, border-color .15s;
+  }
+  button:hover{background:var(--panel2)}
+  button:active{transform:translateY(1px)}
+  button.primary{background:var(--gold);color:#231905;border-color:transparent}
+  button.primary:hover{filter:brightness(1.06)}
+  button.ghost{background:transparent}
+
+  /* ---------- scoreboard ---------- */
+  .score{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 8px}
+  .pill{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;font-weight:700;font-size:15px;border:1px solid var(--line)}
+  .pill .n{font-family:"Rubik";font-weight:900;font-size:18px}
+  .pill.red{background:rgba(212,59,59,.14);color:#ff9a9a}
+  .pill.blue{background:rgba(47,128,214,.16);color:#9cc8ff}
+  .turn{cursor:pointer;user-select:none;border:1px dashed var(--line);background:transparent;color:var(--muted)}
+  .turn b{color:var(--ink)}
+
+  /* ---------- board ---------- */
+  .board{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);gap:8px;flex:1;min-height:0}
+  .tile{
+    position:relative;min-height:0;border-radius:14px;border:none;
+    background:var(--card);color:var(--card-ink);
+    font-family:"Rubik";font-weight:700;font-size:clamp(15px,2.3vw,26px);
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    padding:6px;cursor:pointer;line-height:1.05;
+    box-shadow:0 2px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.06);
+    transition:transform .12s ease, box-shadow .12s ease, background .2s ease, color .2s;
+    overflow:hidden;
+  }
+  .tile:hover{transform:translateY(-2px)}
+  .tile .word{position:relative;z-index:2;word-break:break-word;text-shadow:none}
+  .tile.revealed{cursor:pointer}
+  .tile.revealed::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.0)}
+  .tile.red{background:linear-gradient(180deg,var(--red),var(--red-d));color:#fff;box-shadow:0 2px 0 #6e1c1c}
+  .tile.blue{background:linear-gradient(180deg,var(--blue),var(--blue-d));color:#fff;box-shadow:0 2px 0 #173f6a}
+  .tile.neutral{background:linear-gradient(180deg,#d4be93,var(--neutral));color:var(--neutral-ink);box-shadow:0 2px 0 #8a744a}
+  .tile.assassin{background:var(--assassin);color:var(--assassin-ink);box-shadow:0 2px 0 #000, inset 0 0 0 2px #2a2a33}
+  .tile.assassin .word::before{content:"☠ ";opacity:.9}
+  .tile.dim{opacity:.55}
+  /* key-card (phone) tiles slightly different sizing handled by .keymode */
+
+  /* ---------- modal / qr ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(4,8,12,.72);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+  .overlay.open{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;max-width:380px;width:100%;text-align:center}
+  .modal h3{font-family:"Rubik";font-weight:900;margin:0 0 6px}
+  .modal p{color:var(--muted);font-size:14px;margin:0 0 16px;line-height:1.5}
+  #qr{background:#fff;padding:14px;border-radius:14px;display:inline-block;min-height:200px}
+  #qr img,#qr canvas{display:block}
+  .urlbox{margin-top:14px;display:flex;gap:8px}
+  .urlbox input{flex:1;background:var(--bg2);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px;font-size:12px;direction:ltr;text-align:left}
+  .hint{color:var(--muted);font-size:12.5px;margin-top:12px;line-height:1.5}
+
+  /* ---------- key (spymaster) view ---------- */
+  .keyhead{text-align:center;margin-bottom:8px}
+  .keyhead .secret{display:inline-block;background:rgba(227,169,43,.14);color:var(--gold);border:1px solid rgba(227,169,43,.4);padding:7px 14px;border-radius:999px;font-weight:700;font-size:13px}
+  .keyhead h2{font-family:"Rubik";font-weight:900;margin:12px 0 4px;font-size:22px}
+  .keymode .tile{cursor:default;min-height:0;font-size:clamp(13px,3.6vw,20px)}
+  .keymode .tile:hover{transform:none}
+  .legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:13px}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:13px;height:13px;border-radius:4px;display:inline-block}
+
+  .foot{margin-top:8px;margin-bottom:0;color:var(--muted);font-size:12px;text-align:center;line-height:1.4}
+
+  /* assassin toast */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(120px);
+    background:var(--assassin);color:#fff;border:2px solid #34343f;padding:14px 22px;border-radius:14px;
+    font-family:"Rubik";font-weight:900;font-size:18px;z-index:60;transition:transform .3s ease;box-shadow:0 12px 40px rgba(0,0,0,.6)}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:560px){
+    h1{font-size:26px}
+    .board{gap:7px}
+    .tile{border-radius:11px}
+    .controls button{padding:9px 12px;font-size:14px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<!-- QR modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3>כרטיס המפתח למגדירים</h3>
+    <p>שני המגדירים סורקים את הברקוד בטלפון כדי לראות את הצבעים. אל תראו את המסך של הטלפון לאף אחד אחר.</p>
+    <div id="qr"></div>
+    <div class="urlbox">
+      <input id="urlInput" readonly>
+      <button class="primary" id="copyBtn">העתק</button>
+    </div>
+    <button class="ghost" id="closeBtn" style="margin-top:14px">סגירה</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">☠ נחשף המתנקש</div>
+
+<script>
+/* ===== מאגר מילים ===== */
+const WORDS = [
+"יאמי","אבינעם","אראל","מור דרור","יהונתן","המורה אביבית","חדר הכלה","הלכה","לוח עם תמונות","ברוב קולות",
+"יכולות","חברים","אמפתיה","קיף","למינציה","בשליטתי","לא בשליטתי","הכנת ברוב קולות","תעתועי ראייה","זום",
+"רעיונות","לוח שעם","תמונות","שיתוף חוויות","התעניינות"
+];
+
+/* ===== מחולל אקראי מבוסס seed (דטרמיניסטי) ===== */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function shuffle(arr,rand){for(let i=arr.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+/* בונה לוח זהה מאותו seed גם במחשב וגם בטלפון */
+function buildBoard(seed){
+  const rand=mulberry32(seed);
+  const pool=shuffle(WORDS.slice(),rand);
+  const words=pool.slice(0,25);
+  let colors=[];
+  for(let i=0;i<9;i++)colors.push("red");
+  for(let i=0;i<8;i++)colors.push("blue");
+  for(let i=0;i<7;i++)colors.push("neutral");
+  colors.push("assassin");
+  shuffle(colors,rand);
+  return words.map((w,i)=>({word:w,color:colors[i]}));
+}
+
+const COLOR_HE={red:"אדום",blue:"כחול",neutral:"נייטרלי",assassin:"מתנקש"};
+const baseUrl=()=>location.origin+location.pathname;
+
+/* ===== ניתוב לפי ה-hash ===== */
+function getParams(){return new URLSearchParams(location.hash.slice(1));}
+
+function init(){
+  const p=getParams();
+  if(p.has("key")){ renderKey(parseInt(p.get("key"),10)); return; }
+  const seed = p.has("board") ? parseInt(p.get("board"),10) : null;
+  renderBoard(seed);
+}
+
+/* ========================================================= */
+/* ===============   מסך מחשב — הלוח   ====================== */
+/* ========================================================= */
+let state=null;
+
+function renderBoard(seed){
+  if(!seed||isNaN(seed)){ seed=Math.floor(Math.random()*1e9); history.replaceState(null,"","#board="+seed); }
+  const board=buildBoard(seed);
+  state={seed,board,revealed:Array(25).fill(false),turn:"red"};
+
+  const app=document.getElementById("app");
+  app.innerHTML=`
+    <header>
+      <div class="brand">
+        <div class="stamp">CLASSIFIED</div>
+        <h1>שם קוד<small>לוח המבצע</small></h1>
+      </div>
+      <div class="controls">
+        <button class="ghost" id="qrBtn">📷 כרטיס מפתח (QR)</button>
+        <button class="primary" id="newBtn">🎲 לוח חדש</button>
+      </div>
+    </header>
+
+    <div class="score">
+      <div class="pill red"><span class="n" id="redN">0</span> אדום מתוך 9</div>
+      <div class="pill blue"><span class="n" id="blueN">0</span> כחול מתוך 8</div>
+      <button class="pill turn" id="turnBtn">תור: <b id="turnTxt">אדום</b> — לחצו להחלפה</button>
+    </div>
+
+    <div class="board" id="board"></div>
+  `;
+
+  const boardEl=document.getElementById("board");
+  board.forEach((cell,i)=>{
+    const t=document.createElement("button");
+    t.className="tile";
+    t.innerHTML=`<span class="word">${cell.word}</span>`;
+    t.addEventListener("click",()=>toggleReveal(i,t));
+    boardEl.appendChild(t);
+  });
+
+  document.getElementById("newBtn").onclick=()=>{const s=Math.floor(Math.random()*1e9);location.hash="board="+s;renderBoard(s);};
+  document.getElementById("qrBtn").onclick=()=>openQR(seed);
+  document.getElementById("turnBtn").onclick=()=>{
+    state.turn=state.turn==="red"?"blue":"red";
+    document.getElementById("turnTxt").textContent=state.turn==="red"?"אדום":"כחול";
+  };
+}
+
+function toggleReveal(i,el){
+  const cell=state.board[i];
+  state.revealed[i]=!state.revealed[i];
+  if(state.revealed[i]){
+    el.classList.add("revealed",cell.color);
+    if(cell.color==="assassin")showToast();
+  }else{
+    el.classList.remove("revealed","red","blue","neutral","assassin");
+  }
+  updateScore();
+}
+
+function updateScore(){
+  let r=0,b=0;
+  state.board.forEach((c,i)=>{if(state.revealed[i]){if(c.color==="red")r++;if(c.color==="blue")b++;}});
+  document.getElementById("redN").textContent=r;
+  document.getElementById("blueN").textContent=b;
+}
+
+function showToast(){
+  const t=document.getElementById("toast");
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2600);
+}
+
+/* ===== מודאל QR ===== */
+function openQR(seed){
+  const url=baseUrl()+"#key="+seed;
+  const box=document.getElementById("qr");
+  box.innerHTML="";
+  document.getElementById("urlInput").value=url;
+  if(window.QRCode){
+    new QRCode(box,{text:url,width:200,height:200,correctLevel:QRCode.CorrectLevel.M});
+  }else{
+    box.innerHTML='<div style="color:#333;font-size:13px;padding:20px">טען מחדש לאינטרנט כדי להציג QR.<br>בינתיים העתיקו את הקישור למטה.</div>';
+  }
+  document.getElementById("overlay").classList.add("open");
+}
+function closeQR(){document.getElementById("overlay").classList.remove("open");}
+
+/* ========================================================= */
+/* ===========   טלפון — כרטיס המפתח (מגדיר)   ============== */
+/* ========================================================= */
+function renderKey(seed){
+  const board=buildBoard(seed);
+  const app=document.getElementById("app");
+  app.classList.add("keymode");
+  app.innerHTML=`
+    <div class="keyhead">
+      <div class="secret">🔒 לעיני המגדירים בלבד</div>
+      <h2>כרטיס המפתח</h2>
+    </div>
+    <div class="board" id="board"></div>
+    <div class="legend">
+      <span><i class="dot" style="background:var(--red)"></i> אדום ×9</span>
+      <span><i class="dot" style="background:var(--blue)"></i> כחול ×8</span>
+      <span><i class="dot" style="background:var(--neutral)"></i> נייטרלי ×7</span>
+      <span><i class="dot" style="background:#000"></i> מתנקש ×1</span>
+    </div>
+    <p class="foot">האדומים פותחים (9 מילים). לוח מס׳ ${seed} — זהה ללוח שעל המסך.</p>
+  `;
+  const boardEl=document.getElementById("board");
+  board.forEach(cell=>{
+    const t=document.createElement("div");
+    t.className="tile revealed "+cell.color;
+    t.innerHTML=`<span class="word">${cell.word}</span>`;
+    boardEl.appendChild(t);
+  });
+}
+
+/* ===== חיווט כללי ===== */
+document.getElementById("closeBtn").onclick=closeQR;
+document.getElementById("overlay").addEventListener("click",e=>{if(e.target.id==="overlay")closeQR();});
+document.getElementById("copyBtn").onclick=()=>{
+  const inp=document.getElementById("urlInput");inp.select();
+  navigator.clipboard?.writeText(inp.value);
+  const b=document.getElementById("copyBtn");b.textContent="הועתק ✓";setTimeout(()=>b.textContent="העתק",1500);
+};
+window.addEventListener("hashchange",init);
+init();
+</script>
+</body>
+</html>
