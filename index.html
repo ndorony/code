@@ -115,6 +115,29 @@
     font-family:"Rubik";font-weight:900;font-size:18px;z-index:60;transition:transform .3s ease;box-shadow:0 12px 40px rgba(0,0,0,.6)}
   .toast.show{transform:translateX(-50%) translateY(0)}
 
+  /* ---------- win celebration ---------- */
+  #win{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;z-index:70}
+  #win.show{display:flex}
+  #win .winCard{
+    text-align:center;background:rgba(10,16,22,.85);backdrop-filter:blur(6px);
+    border:2px solid var(--gold);border-radius:24px;padding:32px 44px;
+    box-shadow:0 24px 90px rgba(0,0,0,.75);
+    transform:scale(.6);opacity:0;transition:transform .5s cubic-bezier(.2,1.3,.4,1),opacity .4s;
+  }
+  #win.show .winCard{transform:scale(1);opacity:1}
+  #win .trophy{font-size:66px;line-height:1;filter:drop-shadow(0 8px 18px rgba(0,0,0,.5));animation:trophyPop .7s ease both}
+  #win .winTeam{font-family:"Rubik";font-weight:900;font-size:clamp(34px,7vw,52px);margin:8px 0 2px}
+  #win .winTeam.red{color:#ff7a7a;text-shadow:0 0 24px rgba(212,59,59,.6)}
+  #win .winTeam.blue{color:#8fc1ff;text-shadow:0 0 24px rgba(47,128,214,.6)}
+  #win .winSub{color:var(--muted);font-size:15px;margin:0 0 20px}
+  #win .winBtns{display:flex;gap:10px;justify-content:center}
+  @keyframes trophyPop{0%{transform:scale(0) rotate(-35deg)}65%{transform:scale(1.35) rotate(12deg)}100%{transform:scale(1) rotate(0)}}
+  .confetti{position:fixed;top:-24px;z-index:68;pointer-events:none;border-radius:2px;will-change:transform}
+  @keyframes confettiFall{
+    0%{transform:translateY(-24px) rotateZ(0);opacity:1}
+    100%{transform:translateY(106vh) rotateZ(720deg);opacity:.95}
+  }
+
   @media (max-width:560px){
     h1{font-size:26px}
     .board{gap:7px}
@@ -141,6 +164,19 @@
 </div>
 
 <div class="toast" id="toast">☠ נחשף המתנקש</div>
+
+<!-- win celebration -->
+<div id="win">
+  <div class="winCard">
+    <div class="trophy">🏆</div>
+    <div class="winTeam" id="winTeam">ניצחון!</div>
+    <p class="winSub" id="winSub">כל הסוכנים זוהו</p>
+    <div class="winBtns">
+      <button class="primary" id="winNewBtn">🎲 לוח חדש</button>
+      <button class="ghost" id="winCloseBtn">סגירה</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ===== מאגר מילים ===== */
@@ -189,7 +225,8 @@ let state=null;
 function renderBoard(seed){
   if(!seed||isNaN(seed)){ seed=Math.floor(Math.random()*1e9); history.replaceState(null,"","#board="+seed); }
   const board=buildBoard(seed);
-  state={seed,board,revealed:Array(25).fill(false),turn:"red"};
+  state={seed,board,revealed:Array(25).fill(false),turn:"red",winner:null};
+  hideWin();
 
   const app=document.getElementById("app");
   app.innerHTML=`
@@ -235,7 +272,10 @@ function toggleReveal(i,el){
   state.revealed[i]=!state.revealed[i];
   if(state.revealed[i]){
     el.classList.add("revealed",cell.color);
-    if(cell.color==="assassin")showToast();
+    if(cell.color==="assassin"){
+      showToast();
+      if(!state.winner){ const w=state.turn==="red"?"blue":"red"; celebrate(w,"הקבוצה היריבה חשפה את המתנקש"); }
+    }
   }else{
     el.classList.remove("revealed","red","blue","neutral","assassin");
   }
@@ -247,6 +287,46 @@ function updateScore(){
   state.board.forEach((c,i)=>{if(state.revealed[i]){if(c.color==="red")r++;if(c.color==="blue")b++;}});
   document.getElementById("redN").textContent=r;
   document.getElementById("blueN").textContent=b;
+  if(!state.winner){
+    if(r>=9) celebrate("red","כל 9 הסוכנים האדומים זוהו");
+    else if(b>=8) celebrate("blue","כל 8 הסוכנים הכחולים זוהו");
+  }
+}
+
+/* ===== חגיגת ניצחון ===== */
+function celebrate(team,sub){
+  state.winner=team;
+  const isRed=team==="red";
+  const colors=isRed?["#d43b3b","#ff7a7a","#e3a92b","#ffffff"]:["#2f80d6","#8fc1ff","#e3a92b","#ffffff"];
+  const teamEl=document.getElementById("winTeam");
+  teamEl.textContent=(isRed?"אדום":"כחול")+" ניצח!";
+  teamEl.className="winTeam "+team;
+  document.getElementById("winSub").textContent=sub||"";
+  document.getElementById("win").classList.add("show");
+  launchConfetti(colors);
+  const burst=setInterval(()=>launchConfetti(colors),850);
+  setTimeout(()=>clearInterval(burst),3000);
+}
+
+function launchConfetti(colors){
+  for(let i=0;i<120;i++){
+    const c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"vw";
+    c.style.background=colors[i%colors.length];
+    c.style.width=(6+Math.random()*7)+"px";
+    c.style.height=(10+Math.random()*10)+"px";
+    const dur=2.4+Math.random()*2;
+    c.style.animation=`confettiFall ${dur}s linear ${Math.random()*.5}s forwards`;
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),(dur+1)*1000);
+  }
+}
+
+function hideWin(){
+  const w=document.getElementById("win");
+  if(w) w.classList.remove("show");
+  document.querySelectorAll(".confetti").forEach(c=>c.remove());
 }
 
 function showToast(){
@@ -308,6 +388,8 @@ document.getElementById("copyBtn").onclick=()=>{
   navigator.clipboard?.writeText(inp.value);
   const b=document.getElementById("copyBtn");b.textContent="הועתק ✓";setTimeout(()=>b.textContent="העתק",1500);
 };
+document.getElementById("winCloseBtn").onclick=hideWin;
+document.getElementById("winNewBtn").onclick=()=>{const s=Math.floor(Math.random()*1e9);location.hash="board="+s;renderBoard(s);};
 window.addEventListener("hashchange",init);
 init();
 </script>
