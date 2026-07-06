@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>שם קוד — לוח משחק</title>
+<title>יום הולדת לחניתה — שם קוד</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
@@ -17,15 +17,19 @@
     --blue:#2f80d6; --blue-d:#225f9f;
     --neutral:#c2a878; --neutral-ink:#2a2113;
     --assassin:#0b0b10; --assassin-ink:#cfd4da;
-    --gold:#e3a92b;
+    --gold:#ffd166; --pink:#ef5da8; --purple:#9b5de5; --mint:#65d6ad;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;overflow:hidden}
   body{
-    background:radial-gradient(1200px 700px at 70% -10%, #18222e 0%, var(--bg) 55%);
+    background:
+      radial-gradient(circle at 12% 8%,rgba(239,93,168,.18),transparent 24%),
+      radial-gradient(circle at 88% 14%,rgba(101,214,173,.16),transparent 22%),
+      radial-gradient(1200px 700px at 70% -10%,#20243b 0%,var(--bg) 58%);
     color:var(--ink); font-family:"Heebo",system-ui,sans-serif;
     min-height:100%; -webkit-font-smoothing:antialiased;
   }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:radial-gradient(circle,#ffd166 1.5px,transparent 2px),radial-gradient(circle,#ef5da8 1.5px,transparent 2px),radial-gradient(circle,#65d6ad 1.5px,transparent 2px);background-size:74px 74px,91px 91px,113px 113px;background-position:0 0,20px 35px,50px 12px}
   .wrap{max-width:1100px;margin:0 auto;padding:10px 16px 12px;height:100dvh;display:flex;flex-direction:column}
 
   /* ---------- header ---------- */
@@ -37,6 +41,7 @@
     padding:4px 10px;border-radius:6px;transform:rotate(-4deg);
     font-size:13px;white-space:nowrap;
   }
+  .stamp.birthday{border-color:var(--pink);color:#fff;background:linear-gradient(135deg,var(--pink),var(--purple));box-shadow:0 5px 18px rgba(239,93,168,.3)}
   h1{font-family:"Rubik";font-weight:900;font-size:34px;margin:0;line-height:1}
   h1 small{display:block;font-family:"Heebo";font-weight:500;font-size:12px;letter-spacing:3px;color:var(--muted);margin-top:6px}
 
@@ -74,6 +79,7 @@
     overflow:hidden;
   }
   .tile:hover{transform:translateY(-2px)}
+  .tile:not(.revealed):hover{background:var(--card);color:var(--card-ink);filter:none;border-color:transparent}
   .tile .word{position:relative;z-index:2;word-break:break-word;text-shadow:none}
   .tile.revealed{cursor:pointer}
   .tile.revealed::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.0)}
@@ -83,6 +89,20 @@
   .tile.assassin{background:var(--assassin);color:var(--assassin-ink);box-shadow:0 2px 0 #000, inset 0 0 0 2px #2a2a33}
   .tile.assassin .word::before{content:"☠ ";opacity:.9}
   .tile.dim{opacity:.55}
+  .tile.reveal-red{animation:revealRed .48s cubic-bezier(.2,1.35,.4,1)}
+  .tile.reveal-blue{animation:revealBlue .48s cubic-bezier(.2,1.35,.4,1)}
+  .tile.reveal-neutral{animation:revealNeutral .42s ease-out}
+  .tile.reveal-assassin{animation:revealAssassin .65s ease-out}
+  .tile.hide-card{animation:hideCard .28s ease-in-out}
+  .card-confetti{position:fixed;left:var(--start-x);top:var(--start-y);z-index:46;width:var(--piece-w);height:var(--piece-h);border-radius:var(--piece-radius);pointer-events:none;background:var(--piece-color);box-shadow:0 0 var(--glow) var(--piece-color);animation:cardConfetti var(--duration) cubic-bezier(.1,.68,.2,1) forwards;will-change:transform,opacity}
+  .card-celebration-flash{position:fixed;z-index:44;width:34px;height:34px;border-radius:50%;pointer-events:none;background:#fff;box-shadow:0 0 20px 10px var(--flash-color),0 0 70px 35px color-mix(in srgb,var(--flash-color) 55%,transparent);animation:celebrationFlash .8s ease-out forwards}
+  @keyframes revealRed{0%{transform:perspective(500px) rotateY(85deg) scale(.88)}55%{transform:perspective(500px) rotateY(-8deg) scale(1.08);filter:brightness(1.35)}100%{transform:none;filter:none}}
+  @keyframes revealBlue{0%{transform:perspective(500px) rotateX(80deg) scale(.88)}55%{transform:perspective(500px) rotateX(-7deg) scale(1.08);filter:brightness(1.4)}100%{transform:none;filter:none}}
+  @keyframes revealNeutral{0%{transform:scale(.82);filter:sepia(1) brightness(1.4)}65%{transform:scale(1.06)}100%{transform:none;filter:none}}
+  @keyframes revealAssassin{0%{transform:scale(.8);filter:brightness(3)}25%{transform:scale(1.1) rotate(-3deg)}38%{transform:rotate(3deg)}52%{transform:rotate(-2deg)}68%{transform:rotate(2deg)}100%{transform:none;filter:none}}
+  @keyframes hideCard{0%{transform:scale(1)}50%{transform:scale(.86) rotateY(22deg);opacity:.65}100%{transform:none;opacity:1}}
+  @keyframes cardConfetti{0%{transform:translate(-50%,0) rotate(0) scale(.8);opacity:1}72%{opacity:1}100%{transform:translate(calc(-50% + var(--fly-x)),var(--fly-y)) rotate(var(--r)) scale(1.08);opacity:0}}
+  @keyframes celebrationFlash{0%{transform:translate(-50%,-50%) scale(.2);opacity:1}45%{transform:translate(-50%,-50%) scale(2.4);opacity:.8}100%{transform:translate(-50%,-50%) scale(4);opacity:0}}
   /* key-card (phone) tiles slightly different sizing handled by .keymode */
 
   /* ---------- modal / qr ---------- */
@@ -112,6 +132,35 @@
 
   .foot{margin-top:8px;margin-bottom:0;color:var(--muted);font-size:12px;text-align:center;line-height:1.4}
 
+  /* ---------- birthday decorations ---------- */
+  .birthday-note{color:var(--gold);font-family:"Rubik";font-weight:700;font-size:13px;margin-top:4px}
+  .party-decor{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+  .balloon{position:absolute;font-size:clamp(34px,5vw,58px);filter:drop-shadow(0 8px 8px rgba(0,0,0,.25));animation:balloonFloat 5s ease-in-out infinite}
+  .balloon:nth-child(1){top:13%;left:1.5%;animation-delay:-1s}
+  .balloon:nth-child(2){top:55%;right:1%;animation-delay:-3.2s;transform:scaleX(-1)}
+  .balloon:nth-child(3){top:3%;right:9%;font-size:34px;animation-delay:-2s}
+  .garland{position:absolute;top:-9px;left:0;width:100%;display:flex;justify-content:center;gap:5px;filter:drop-shadow(0 5px 4px rgba(0,0,0,.28))}
+  .flag{width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;border-top:30px solid var(--pink)}
+  .flag:nth-child(4n+2){border-top-color:var(--gold)}
+  .flag:nth-child(4n+3){border-top-color:var(--mint)}
+  .flag:nth-child(4n){border-top-color:var(--purple)}
+  .sixty-watermark{position:absolute;left:50%;top:49%;translate:-50% -50%;font-family:"Rubik";font-size:min(48vw,520px);font-weight:900;line-height:1;color:transparent;-webkit-text-stroke:2px rgba(255,209,102,.055);text-shadow:0 0 80px rgba(155,93,229,.08)}
+  .sparkle{position:absolute;color:var(--gold);font-size:22px;animation:sparkle 2.2s ease-in-out infinite}
+  .sparkle.s1{top:18%;right:5%}.sparkle.s2{bottom:15%;left:4%;animation-delay:-.8s}.sparkle.s3{top:48%;left:2%;animation-delay:-1.5s}
+  .wrap{position:relative;z-index:2}
+  @keyframes balloonFloat{0%,100%{translate:0 0;rotate:-4deg}50%{translate:0 -14px;rotate:5deg}}
+  @keyframes sparkle{0%,100%{scale:.65;opacity:.35;rotate:0deg}50%{scale:1.25;opacity:1;rotate:35deg}}
+  .party-surprise{position:fixed;z-index:1;pointer-events:none;will-change:transform,opacity;filter:drop-shadow(0 10px 12px rgba(0,0,0,.28))}
+  .party-surprise.fly-rtl{right:-110px;top:18%;font-size:68px;animation:flyAcross 5.2s ease-in-out forwards}
+  .party-surprise.fly-ltr{left:-110px;bottom:13%;font-size:64px;animation:flyAcrossReverse 5.2s ease-in-out forwards}
+  .party-surprise.pop-60{left:50%;top:50%;font-family:"Rubik";font-size:min(27vw,230px);font-weight:900;color:var(--gold);text-shadow:0 6px 0 #b87811,0 14px 35px rgba(0,0,0,.5);animation:sixtyPop 2.8s cubic-bezier(.2,1.25,.35,1) forwards}
+  @keyframes flyAcross{0%{transform:translateX(0) rotate(8deg);opacity:0}10%{opacity:1}48%{transform:translateX(-48vw) translateY(-35px) rotate(-8deg)}90%{opacity:1}100%{transform:translateX(calc(-100vw - 140px)) rotate(10deg);opacity:0}}
+  @keyframes flyAcrossReverse{0%{transform:translateX(0) rotate(-8deg);opacity:0}10%{opacity:1}48%{transform:translateX(48vw) translateY(-40px) rotate(9deg)}90%{opacity:1}100%{transform:translateX(calc(100vw + 140px)) rotate(-10deg);opacity:0}}
+  @keyframes sixtyPop{0%{transform:translate(-50%,-50%) scale(0) rotate(-16deg);opacity:0}20%{opacity:1}45%{transform:translate(-50%,-50%) scale(1.12) rotate(5deg)}70%{transform:translate(-50%,-50%) scale(1) rotate(0)}100%{transform:translate(-50%,-70%) scale(.8);opacity:0}}
+  .age-badge{display:inline-grid;place-items:center;min-width:64px;height:64px;padding:0 10px;border-radius:50%;font-family:"Rubik";font-size:29px;font-weight:900;color:#291d05;background:radial-gradient(circle at 35% 25%,#fff4b8,var(--gold) 48%,#c98717);border:3px solid #fff0a5;box-shadow:0 0 0 5px rgba(255,209,102,.13),0 8px 24px rgba(0,0,0,.35);rotate:-6deg}
+  .celebration-line{display:flex;align-items:center;justify-content:center;gap:8px;color:#fff1b9;font-weight:700;font-size:13px;margin-top:7px}
+  .board{padding:5px;border:1px solid rgba(255,209,102,.18);border-radius:18px;box-shadow:0 0 35px rgba(155,93,229,.08)}
+
   /* assassin toast */
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(120px);
     background:var(--assassin);color:#fff;border:2px solid #34343f;padding:14px 22px;border-radius:14px;
@@ -136,6 +185,7 @@
   #win .winBtns{display:flex;gap:10px;justify-content:center}
   @keyframes trophyPop{0%{transform:scale(0) rotate(-35deg)}65%{transform:scale(1.35) rotate(12deg)}100%{transform:scale(1) rotate(0)}}
   .confetti{position:fixed;top:-24px;z-index:68;pointer-events:none;border-radius:2px;will-change:transform}
+  .confetti.behind{z-index:1}
   @keyframes confettiFall{
     0%{transform:translateY(-24px) rotateZ(0);opacity:1}
     100%{transform:translateY(106vh) rotateZ(720deg);opacity:.95}
@@ -146,10 +196,17 @@
     .board{gap:7px}
     .tile{border-radius:11px}
     .controls button{padding:9px 12px;font-size:14px}
+    .age-badge{min-width:49px;height:49px;font-size:22px}
+    .garland{opacity:.7}
   }
+  @media (prefers-reduced-motion:reduce){.balloon,.sparkle,.party-surprise,.tile{animation:none!important}.party-surprise,.card-confetti,.card-celebration-flash{display:none}}
 </style>
 </head>
 <body>
+<div class="party-decor" aria-hidden="true">
+  <div class="garland"><i class="flag"></i><i class="flag"></i><i class="flag"></i><i class="flag"></i><i class="flag"></i><i class="flag"></i><i class="flag"></i><i class="flag"></i><i class="flag"></i><i class="flag"></i><i class="flag"></i><i class="flag"></i></div>
+  <div class="sixty-watermark">60</div><span class="balloon">🎈</span><span class="balloon">🎈</span><span class="balloon">🎉</span><span class="sparkle s1">✦</span><span class="sparkle s2">✦</span><span class="sparkle s3">✦</span>
+</div>
 <div class="wrap" id="app"></div>
 
 <!-- QR modal -->
@@ -241,7 +298,7 @@ async function init(){
 function renderUnlock(invalid){
   const app=document.getElementById("app");
   app.className="wrap";
-  app.innerHTML=`<div class="modal unlock"><div class="stamp" style="display:inline-block">CLASSIFIED</div><h3 style="margin-top:18px">המשחק נעול</h3><p>סרקו את קוד ה־QR של המשחק. אפשר גם להזין את הסיסמה ידנית.</p><form id="unlockForm"><input id="passwordInput" type="password" autocomplete="current-password" placeholder="סיסמה" autofocus><div class="error">${invalid?"הסיסמה אינה נכונה":""}</div><button class="primary" type="submit">פתיחת המשחק</button></form></div>`;
+  app.innerHTML=`<div class="modal unlock"><div class="age-badge">60</div><div class="stamp birthday" style="display:inline-block;margin-right:12px">🎂 חניתה חוגגת</div><h3 style="margin-top:20px">שישה עשורים של אהבה ושמחה</h3><p>סרקו את קוד ה־QR של המשחק. אפשר גם להזין את הסיסמה ידנית.</p><form id="unlockForm"><input id="passwordInput" type="password" autocomplete="current-password" placeholder="סיסמה" autofocus><div class="error">${invalid?"הסיסמה אינה נכונה":""}</div><button class="primary" type="submit">כניסה לחגיגת ה־60 🎉</button></form><div class="celebration-line">✨ משפחה · חברות · אהבה · נתינה ✨</div></div>`;
   document.getElementById("unlockForm").onsubmit=e=>{
     e.preventDefault();
     const p=getParams();p.set("p",document.getElementById("passwordInput").value);
@@ -269,8 +326,8 @@ function renderBoard(seed){
   app.innerHTML=`
     <header>
       <div class="brand">
-        <div class="stamp">CLASSIFIED</div>
-        <h1>שם קוד<small>לוח המבצע</small></h1>
+        <div class="age-badge">60</div><div class="stamp birthday">🎂 חוגגים לחניתה</div>
+        <div><h1>שם קוד<small>משחק יום ההולדת</small></h1><div class="birthday-note">מזל טוב! 🎉</div></div>
       </div>
       <div class="controls">
         <button class="ghost" id="qrBtn">📷 כרטיס מפתח (QR)</button>
@@ -309,14 +366,56 @@ function toggleReveal(i,el){
   state.revealed[i]=!state.revealed[i];
   if(state.revealed[i]){
     el.classList.add("revealed",cell.color);
+    animateTile(el,cell.color,true);
     if(cell.color==="assassin"){
       showToast();
       if(!state.winner){ const w=state.turn==="red"?"blue":"red"; celebrate(w,"הקבוצה היריבה חשפה את המתנקש"); }
     }
   }else{
     el.classList.remove("revealed","red","blue","neutral","assassin");
+    animateTile(el,cell.color,false);
   }
   updateScore();
+}
+
+function animateTile(el,color,revealing){
+  const classes=["reveal-red","reveal-blue","reveal-neutral","reveal-assassin","hide-card"];
+  el.classList.remove(...classes);
+  void el.offsetWidth;
+  const animationClass=revealing?"reveal-"+color:"hide-card";
+  el.classList.add(animationClass);
+  el.addEventListener("animationend",()=>el.classList.remove(animationClass),{once:true});
+  if(revealing&&(color==="red"||color==="blue")){
+    const palette=color==="red"?["#ff4040","#ff7b7b","#ffd166","#fff","#ef5da8"]:["#2585ed","#63b3ff","#8fd3ff","#fff","#9b5de5"];
+    const rect=el.getBoundingClientRect();
+    const flash=document.createElement("i");
+    flash.className="card-celebration-flash";
+    flash.style.left=(rect.left+rect.width/2)+"px";
+    flash.style.top=(rect.top+5)+"px";
+    flash.style.setProperty("--flash-color",color==="red"?"#ff4d6d":"#4da3ff");
+    document.body.appendChild(flash);
+    setTimeout(()=>flash.remove(),900);
+    for(let i=0;i<84;i++){
+      const piece=document.createElement("i");
+      piece.className="card-confetti";
+      piece.style.setProperty("--piece-color",palette[i%palette.length]);
+      piece.style.setProperty("--piece-w",(5+Math.random()*7)+"px");
+      piece.style.setProperty("--piece-h",(i%5===0?5:10+Math.random()*10)+"px");
+      piece.style.setProperty("--piece-radius",i%5===0?"50%":"2px");
+      piece.style.setProperty("--glow",i%7===0?"9px":"0px");
+      piece.style.setProperty("--start-x",(rect.left+rect.width/2+(Math.random()-.5)*26)+"px");
+      piece.style.setProperty("--start-y",(rect.top+4)+"px");
+      piece.style.setProperty("--fly-x",((Math.random()-.5)*Math.min(innerWidth*1.25,1100))+"px");
+      piece.style.setProperty("--fly-y",(-260-Math.random()*Math.min(innerHeight*.8,720))+"px");
+      piece.style.setProperty("--r",((Math.random()>.5?1:-1)*(540+Math.random()*900))+"deg");
+      const duration=2.3+Math.random()*1.1;
+      const delay=(i%3)*.18+Math.random()*.18;
+      piece.style.setProperty("--duration",duration+"s");
+      piece.style.animationDelay=delay+"s";
+      document.body.appendChild(piece);
+      setTimeout(()=>piece.remove(),(duration+delay+.2)*1000);
+    }
+  }
 }
 
 function updateScore(){
@@ -345,10 +444,10 @@ function celebrate(team,sub){
   setTimeout(()=>clearInterval(burst),3000);
 }
 
-function launchConfetti(colors){
+function launchConfetti(colors,behind=false){
   for(let i=0;i<120;i++){
     const c=document.createElement("div");
-    c.className="confetti";
+    c.className="confetti"+(behind?" behind":"");
     c.style.left=Math.random()*100+"vw";
     c.style.background=colors[i%colors.length];
     c.style.width=(6+Math.random()*7)+"px";
@@ -358,6 +457,31 @@ function launchConfetti(colors){
     document.body.appendChild(c);
     setTimeout(()=>c.remove(),(dur+1)*1000);
   }
+}
+
+/* הפתעות יום הולדת קצרות שמופיעות מדי פעם */
+let partyTimer=null;
+function launchPartySurprise(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches||document.hidden)return;
+  const choices=[
+    {text:"🎈",className:"fly-rtl",duration:5400},
+    {text:"🎂",className:"fly-ltr",duration:5400},
+    {text:"60",className:"pop-60",duration:3000},
+    {text:"🎁",className:"fly-rtl",duration:5400}
+  ];
+  const pick=choices[Math.floor(Math.random()*choices.length)];
+  const el=document.createElement("div");
+  el.className="party-surprise "+pick.className;
+  el.textContent=pick.text;
+  document.body.appendChild(el);
+  if(Math.random()<.45) launchConfetti(["#ffd166","#ef5da8","#65d6ad","#9b5de5"],true);
+  setTimeout(()=>el.remove(),pick.duration);
+}
+function schedulePartySurprises(){
+  if(partyTimer)return;
+  const schedule=()=>{partyTimer=setTimeout(()=>{partyTimer=null;launchPartySurprise();schedule();},7000+Math.random()*7000);};
+  setTimeout(launchPartySurprise,2200);
+  schedule();
 }
 
 function hideWin(){
@@ -396,8 +520,10 @@ function renderKey(seed){
   app.classList.add("keymode");
   app.innerHTML=`
     <div class="keyhead">
-      <div class="secret">🔒 לעיני המגדירים בלבד</div>
-      <h2>כרטיס המפתח</h2>
+      <div class="age-badge">60</div>
+      <div class="secret" style="margin-right:10px">🎁 לעיני המגדירים בלבד</div>
+      <h2>כרטיס המפתח של חניתה</h2>
+      <div class="celebration-line">שישים שנים של זיכרונות, אנשים ומקומות ✨</div>
     </div>
     <div class="board" id="board"></div>
     <div class="legend">
@@ -429,6 +555,7 @@ document.getElementById("winCloseBtn").onclick=hideWin;
 document.getElementById("winNewBtn").onclick=()=>{const s=Math.floor(Math.random()*1e9);location.hash=gameHash("board",s);};
 window.addEventListener("hashchange",init);
 init();
+schedulePartySurprises();
 </script>
 </body>
 </html>
