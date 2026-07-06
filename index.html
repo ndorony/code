@@ -330,6 +330,7 @@ function renderBoard(seed){
         <div><h1>שם קוד<small>משחק יום ההולדת</small></h1><div class="birthday-note">מזל טוב! 🎉</div></div>
       </div>
       <div class="controls">
+        <button class="ghost" id="whoamiBtn">🤳 מי אני?</button>
         <button class="ghost" id="qrBtn">📷 כרטיס מפתח (QR)</button>
         <button class="primary" id="newBtn">🎲 לוח חדש</button>
       </div>
@@ -354,6 +355,7 @@ function renderBoard(seed){
   });
 
   document.getElementById("newBtn").onclick=()=>{const s=Math.floor(Math.random()*1e9);location.hash=gameHash("board",s);};
+  document.getElementById("whoamiBtn").onclick=()=>{location.href="whoami.html#"+new URLSearchParams({p:activePassword});};
   document.getElementById("qrBtn").onclick=()=>openQR(seed);
   document.getElementById("turnBtn").onclick=()=>{
     state.turn=state.turn==="red"?"blue":"red";
